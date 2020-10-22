@@ -1,14 +1,35 @@
-version: '3'
+version: '3.0'
 
 services:
-  vpn:
-    image: hwdsl2/ipsec-vpn-server
+  jenkins:
     restart: always
-    env_file:
-      - ./vpn.env
-    ports:
-      - "500:500/udp"
-      - "4500:4500/udp"
+    container_name: jenkins
+    image: xmartlabs/jenkins-android:latest
     privileged: true
-    hostname: ipsec-vpn-server
-    container_name: ipsec-vpn-server
+    tty: true
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - "./jenkins_home:/var/jenkins_home"
+      - "/home/noman/Android/Sdk:/opt/android-sdk-linux"
+
+# ref: https://github.com/jfrog/artifactory-docker-examples/blob/master/docker-compose/artifactory/artifactory-oss.yml
+# ref: https://www.arvinep.com/2016/04/jenkins-docker-container-problem.html
+  artifactory:
+    restart: always
+    container_name: artifactory
+    image: docker.bintray.io/jfrog/artifactory-oss:latest
+    user: "${UID}:${GID}"
+    privileged: true
+    tty: true
+    ports:
+      - "8081:8081"
+      - "8082:8082"
+    volumes:
+      - "./jforg_home/artifactory:/var/opt/jfrog/artifactory"
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 32000
+        hard: 40000
